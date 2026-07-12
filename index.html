@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>Anoma 2D — User</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #0f172a;
+            color: white;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 16px;
+        }
+        .app-container {
+            background: #1e293b;
+            padding: 24px 18px;
+            border-radius: 32px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 20px 35px rgba(0, 0, 0, 0.6);
+            text-align: center;
+            border: 1px solid #334155;
+        }
+        .app-logo {
+            font-size: 44px;
+            margin-bottom: 4px;
+        }
+        h2 {
+            color: #38bdf8;
+            margin: 0 0 4px 0;
+            font-size: 26px;
+        }
+        .sub-title {
+            color: #94a3b8;
+            font-size: 13px;
+            margin-bottom: 22px;
+        }
+        .input-group {
+            margin-bottom: 16px;
+            text-align: left;
+        }
+        .input-group label {
+            display: block;
+            font-size: 12px;
+            color: #94a3b8;
+            margin-bottom: 6px;
+        }
+        .input-field {
+            width: 100%;
+            padding: 13px 14px;
+            background: #0f172a;
+            border: 1px solid #475569;
+            border-radius: 50px;
+            color: white;
+            font-size: 15px;
+            outline: none;
+        }
+        .input-field:focus {
+            border-color: #38bdf8;
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
+        }
+        .btn-main {
+            width: 100%;
+            padding: 15px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 6px;
+        }
+        .btn-deposit {
+            background: #10b981 !important;
+        }
+        .btn-withdraw {
+            background: #ef4444 !important;
+        }
+        .btn-3d {
+            background: #f59e0b !important;
+        }
+        .toggle-link {
+            margin-top: 16px;
+            font-size: 13px;
+            color: #38bdf8;
+            cursor: pointer;
+            text-decoration: underline;
+            font-weight: 500;
+        }
+
+        /* ✨ CYBERPUNK NEON GLOW BORDER EFFECT */
+        .user-header,
+        .section-card {
+            position: relative;
+            background: #0f172a !important;
+            border-radius: 24px !important;
+            overflow: hidden;
+            border: none !important;
+            z-index: 1;
+        }
+
+        .user-header::before,
+        .section-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(transparent,
+                    #00f2fe 15%,
+                    transparent 35%,
+                    transparent 65%,
+                    #ff007f 85%,
+                    transparent 100%);
+            animation: rotateNeonGlow 4s linear infinite;
+            z-index: -2;
+        }
+
+        .user-header::after,
+        .section-card::after {
+            content: '';
+            position: absolute;
+            inset: 2px;
+            background: #0f172a;
+            border-radius: 22px;
+            z-index: -1;
+        }
+
+        @keyframes rotateNeonGlow {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .user-header>*,
+        .section-card>* {
+            position: relative;
+            z-index: 2;
+        }
+
+        /* ✨ အကောင့်လက်ကျန် ပြတဲ့နေရာ — GLOW & SHINE */
+        .balance-amount {
+            font-size: 28px;
+            font-weight: bold;
+            color: #10b981;
+            margin-top: 4px;
+            display: inline-block;
+            padding: 6px 18px;
+            border-radius: 40px;
+            background: linear-gradient(135deg, #064e3b 0%, #0f172a 80%);
+            border: 1px solid rgba(16, 185, 129, 0.6);
+            box-shadow: 0 0 12px rgba(16, 185, 129, 0.5);
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+            letter-spacing: 0.5px;
+        }
+
+        .balance-amount::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -150%;
+            width: 60%;
+            height: 100%;
+            background: linear-gradient(90deg,
+                    transparent 0%,
+                    rgba(255, 255, 255, 0.35) 50%,
+                    transparent 100%);
+            transform: skewX(-25deg);
+            z-index: 2;
+            animation: balanceShine 3.2s infinite ease-in-out;
+        }
+
+        @keyframes balanceShine {
+            0% {
+                left: -150%;
+            }
+            100% {
+                left: 150%;
+            }
+        }
+
+        .log-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 11px;
+        }
+        .log-table th,
+        .log-table td {
+            padding: 8px 4px;
+            border-bottom: 1px solid #334155;
+            text-align: left;
+        }
+        .log-table th {
+            color: #38bdf8;
+        }
+        .badge {
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: bold;
+        }
+        .bg-pending {
+            background: #f59e0b;
+            color: #0f172a;
+        }
+        .bg-win {
+            background: #10b981;
+            color: white;
+        }
+        .bg-lose {
+            background: #ef4444;
+            color: white;
+        }
+        .bg-approved {
+            background: #10b981;
+            color: white;
+        }
+        .bg-rejected {
+            background: #ef4444;
+            color: white;
+        }
+        .hidden {
+            display: none !important;
+        }
+        .current-date {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-top: 5px;
+        }
+        .flex-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logout-text {
+            color: #ef4444;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 13px;
+        }
+
+        /* AVATAR DESIGN STYLE */
+        .user-profile-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+        }
+        .avatar-wrapper {
+            position: relative;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: #38bdf8;
+            padding: 2px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(56, 189, 248, 0.3);
+        }
+        .avatar-image {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            background-color: #1e293b;
+            background-position: center;
+            background-size: cover;
+        }
+        .avatar-edit-badge {
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+            background: #2563eb;
+            color: white;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1.5px solid #0f172a;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 999;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-card {
+            background: #1e293b;
+            border: 1px solid #475569;
+            border-radius: 24px;
+            padding: 20px;
+            width: 90%;
+            max-width: 360px;
+            color: white;
+            position: relative;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .close-icon {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 22px;
+            cursor: pointer;
+            color: #94a3b8;
+        }
+        .payment-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .pay-option {
+            flex: 1;
+            padding: 10px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 30px;
+            color: #94a3b8;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .pay-option.active {
+            background: #2563eb;
+            color: white;
+            border-color: #2563eb;
+        }
+        .amount-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+        .amount-chip {
+            background: #334155;
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .confirm-btn {
+            width: 100%;
+            padding: 12px;
+            background: #f59e0b;
+            color: #0f172a;
+            border: none;
+            border-radius: 30px;
+            font-weight: bold;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .copy-btn {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 11px;
+            cursor: pointer;
+        }
+        .btn-outline-light {
+            background: transparent;
+            border: 1px solid #475569;
+            color: #94a3b8;
+            padding: 10px;
+            border-radius: 50px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+        }
+        .glow-shine-box {
+            background: #0f172a;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #334155;
+        }
+        .moving-text {
+            display: inline-block;
+            padding-left: 100%;
+            animation: marquee 15s linear infinite;
+            color: #f59e0b;
+            font-size: 14px;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+        @keyframes marquee {
+            0% {
+                transform: translate(0, 0);
+            }
+            100% {
+                transform: translate(-100%, 0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- LOGIN -->
+        <div id="loginSection">
+            <div class="app-logo">💰</div>
+            <h2>Anoma 2D</h2>
+            <div class="sub-title">ရန်ကုန်သာ 2D/3D</div>
+            <div class="input-group">
+                <label>📱 ဖုန်းနံပါတ်</label>
+                <input type="text" id="loginId" class="input-field" placeholder="09xxxxxxxxx">
+            </div>
+            <div class="input-group">
+                <label>🔐 လျှို့ဝှက်နံပါတ်</label>
+                <input type="password" id="loginPass" class="input-field" placeholder="••••••••">
+            </div>
+            <button class="btn-main" onclick="handleLogin()">လော့ဂ်အင် ဝင်မည်</button>
+            <span class="toggle-link" onclick="showSection('registerSection')">🆕 အကောင့်သစ်ဖွင့်ရန်</span>
+        </div>
+
+        <!-- REGISTER -->
+        <div id="registerSection" class="hidden">
+            <div class="app-logo">📝</div>
+            <h2>အကောင့်သစ်ဖွင့်ရန်</h2>
+            <div class="sub-title">မိမိဖုန်းနံပါတ်ဖြင့် ဖွင့်ပါ</div>
+            <div class="input-group">
+                <label>📱 ဖုန်းနံပါတ်</label>
+                <input type="text" id="regPhone" class="input-field" placeholder="09xxxxxxxxx">
+            </div>
+            <div class="input-group">
+                <label>🔑 လျှို့ဝှက်နံပါတ်အသစ်</label>
+                <input type="password" id="regPass" class="input-field" placeholder="စကားဝှက်">
+            </div>
+            <button class="btn-main btn-deposit" onclick="handleRegister()">အကောင့်ဆောက်မည်</button>
+            <span class="toggle-link" onclick="showSection('loginSection')" style="color:#94a3b8;">🔙 လော့ဂ်အင်ပြန်ဝင်ရန်</span>
+        </div>
+
+        <!-- DASHBOARD -->
+        <div id="dashboardSection" class="hidden">
+            <div class="glow-shine-box" style="padding: 10px; margin-bottom: 14px; white-space: nowrap;">
+                <span class="moving-text" id="topMarqueeText">🙋🏻‍♂️ရန်ကုန်သား</span>
+            </div>
+
+            <div class="user-header">
+                <div class="flex-row">
+                    <div class="user-profile-area" onclick="document.getElementById('avatarInput').click()">
+                        <div class="avatar-wrapper">
+                            <div id="userAvatarDisplay" class="avatar-image" style="background-image: url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2240%22 height=%2240%22 viewBox=%220 0 24 24%22 fill=%22%2394a3b8%22><path d=%22M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z%22/></svg>');"></div>
+                            <div class="avatar-edit-badge">📷</div>
+                        </div>
+                        <span><strong id="userPhone">-</strong></span>
+                    </div>
+                    <input type="file" id="avatarInput" accept="image/*" style="display: none;" onchange="uploadAvatar(event)">
+                    <span class="logout-text" onclick="logout()">ထွက်မည် 🔙</span>
+                </div>
+                <div class="current-date" id="currentDate"></div>
+                <div style="margin-top:8px; font-size:12px; color:#94a3b8;">💵 လက်ကျန်ငွေ</div>
+                <div class="balance-amount"><span id="userBalance">0</span> MMK</div>
+            </div>
+
+            <div class="section-card">
+                <div style="display:flex; gap:10px;">
+                    <button class="btn-main btn-deposit" style="flex:1;" onclick="openModal('depositModal')">💰 Ngwe Phya</button>
+                    <button class="btn-main btn-withdraw" style="flex:1;" onclick="openModal('withdrawModal')">💸 Ngwe Thout</button>
+                </div>
+            </div>
+            <div class="section-card">
+                <h3 style="color:#38bdf8;">🎰 2D Htoe Yan</h3>
+                <input type="number" id="betNumber" class="input-field" placeholder="00-99">
+                <input type="number" id="betAmount" class="input-field" placeholder="Thone Kyay">
+                <button class="btn-main" onclick="place2DBet()">2D Htoe Myal</button>
+            </div>
+            <div class="section-card">
+                <h3 style="color:#f59e0b;">🎰 3D Htoe Yan</h3>
+                <input type="number" id="betNumber3D" class="input-field" placeholder="000-999">
+                <input type="number" id="betAmount3D" class="input-field" placeholder="Thone Kyay">
+                <button class="btn-main btn-3d" onclick="place3DBet()">3D Htoe Myal</button>
+            </div>
+            <div class="section-card">
+                <h3 style="color:#10b981;">📊 2D Logs</h3>
+                <table class="log-table">
+                    <thead>
+                        <tr><th>Date</th><th>Num</th><th>Amt</th><th>Result</th></tr>
+                    </thead>
+                    <tbody id="betLogsBody"></tbody>
+                </table>
+            </div>
+            <div class="section-card">
+                <h3 style="color:#f59e0b;">📊 3D Logs</h3>
+                <table class="log-table">
+                    <thead>
+                        <tr><th>Date</th><th>Num</th><th>Amt</th><th>Result</th></tr>
+                    </thead>
+                    <tbody id="betLogs3DBody"></tbody>
+                </table>
+            </div>
+            <div class="section-card">
+                <button class="btn-outline-light" onclick="openTransactionModal()">🔄 Ngwe Thwin/Thout Logs</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ MODALS ============ -->
+
+    <!-- DEPOSIT MODAL -->
+    <div id="depositModal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="close-icon" onclick="closeModal('depositModal')">✕</div>
+            <h3>💰 Ngwe Phya Par</h3>
+            <div class="payment-buttons">
+                <button id="btnKpay" class="pay-option active" onclick="selectPayment('deposit','kpay')">🏦 KBZ</button>
+                <button id="btnWave" class="pay-option" onclick="selectPayment('deposit','wave')">📱 Wave</button>
+            </div>
+            <div class="amount-grid">
+                <button class="amount-chip" onclick="setDepositAmount(2000)">2,000</button>
+                <button class="amount-chip" onclick="setDepositAmount(5000)">5,000</button>
+                <button class="amount-chip" onclick="setDepositAmount(10000)">10K</button>
+                <button class="amount-chip" onclick="setDepositAmount(50000)">50K</button>
+                <button class="amount-chip" onclick="setDepositAmount(100000)">100K</button>
+            </div>
+            <input type="number" id="depAmt" class="input-field" placeholder="Amount" value="5000">
+            <button class="confirm-btn" onclick="proceedToTransfer()">Confirm ➡️</button>
+        </div>
+    </div>
+
+    <!-- WITHDRAW MODAL -->
+    <div id="withdrawModal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="close-icon" onclick="closeModal('withdrawModal')">✕</div>
+            <h3>💸 Ngwe Thout Yar</h3>
+            <div class="payment-buttons">
+                <button id="btnWithdrawKpay" class="pay-option active" onclick="selectPayment('withdraw','kpay')">🏦 KBZ</button>
+                <button id="btnWithdrawWave" class="pay-option" onclick="selectPayment('withdraw','wave')">📱 WavePay</button>
+            </div>
+            <input type="number" id="withdrawAmount" class="input-field" placeholder="Amount">
+            <input type="text" id="withdrawReceiverName" class="input-field" placeholder="Name">
+            <input type="text" id="withdrawAccount" class="input-field" placeholder="Phone/Account">
+            <button class="confirm-btn" onclick="submitWithdraw()">✅ Request</button>
+        </div>
+    </div>
+
+    <!-- KPAY TRANSFER MODAL -->
+    <div id="kpayTransferModal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="close-icon" onclick="closeModal('kpayTransferModal')">✕</div>
+            <h3>💸 KBZ Pay Transfer</h3>
+            <div class="info-row">
+                <span>📛 Name: <strong id="kpayNameDisplay">Loading...</strong></span>
+                <button class="copy-btn" onclick="copyText(document.getElementById('kpayNameDisplay').innerText)">Copy</button>
+            </div>
+            <div class="info-row">
+                <span>📞 Phone: <strong id="kpayPhoneDisplay">Loading...</strong></span>
+                <button class="copy-btn" onclick="copyText(document.getElementById('kpayPhoneDisplay').innerText)">Copy</button>
+            </div>
+            <input type="text" id="kpayTxCode" class="input-field" placeholder="Last 5 digits" maxlength="5">
+            <input type="text" id="kpaySenderName" class="input-field" placeholder="Your Name">
+            <div class="info-row"><span>💎 Amount : </span><strong id="kpayFinalAmount">0 MMK</strong></div>
+            <button class="confirm-btn" style="background:#00aa44;" onclick="submitDeposit('kpay')">✅ Transferred</button>
+        </div>
+    </div>
+
+    <!-- WAVE TRANSFER MODAL -->
+    <div id="waveTransferModal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="close-icon" onclick="closeModal('waveTransferModal')">✕</div>
+            <h3>🌊 Wave Pay Transfer</h3>
+            <div class="info-row">
+                <span>📛 Name: <strong id="waveNameDisplay">Loading...</strong></span>
+                <button class="copy-btn" onclick="copyText(document.getElementById('waveNameDisplay').innerText)">Copy</button>
+            </div>
+            <div class="info-row">
+                <span>📞 Phone: <strong id="wavePhoneDisplay">Loading...</strong></span>
+                <button class="copy-btn" onclick="copyText(document.getElementById('wavePhoneDisplay').innerText)">Copy</button>
+            </div>
+            <input type="text" id="waveTxCode" class="input-field" placeholder="Last 5 digits" maxlength="5">
+            <input type="text" id="waveSenderName" class="input-field" placeholder="Your Name">
+            <div class="info-row"><span>💎 Amount : </span><strong id="waveFinalAmount">0 MMK</strong></div>
+            <button class="confirm-btn" style="background:#00aa44;" onclick="submitDeposit('wave')">✅ Transferred</button>
+        </div>
+    </div>
+
+    <!-- TRANSACTION LOGS MODAL -->
+    <div id="transactionModal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="close-icon" onclick="closeModal('transactionModal')">✕</div>
+            <h3>📄 Transaction Logs</h3>
+            <table class="log-table">
+                <thead>
+                    <tr><th>Date</th><th>Type</th><th>Amt</th><th>Status</th></tr>
+                </thead>
+                <tbody id="modalTransactionLogsBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // ============ DATABASE INIT ============
+        if (!localStorage.getItem('users2DDatabase')) {
+            localStorage.setItem('users2DDatabase', JSON.stringify({ "09123456789": "1234" }));
+        }
+
+        let activeUser = localStorage.getItem('current2DUser') || null;
+
+        function getBalanceKey(phone) { return 'balance_' + phone; }
+
+        function getAvatarKey(phone) { return 'avatar_' + phone; }
+
+        // ============ SECTION SWITCHING ============
+        function showSection(id) {
+            ['loginSection', 'registerSection', 'dashboardSection'].forEach(s =>
+                document.getElementById(s).classList.add('hidden')
+            );
+            document.getElementById(id).classList.remove('hidden');
+        }
+
+        function getFormattedDateTime() {
+            const now = new Date();
+            return now.toLocaleDateString('my-MM') + '၊ ' + now.toLocaleTimeString('my-MM', { hour: '2-digit',
+                minute: '2-digit' });
+        }
+
+        // ============ AVATAR ============
+        function uploadAvatar(event) {
+            const file = event.target.files[0];
+            if (file && activeUser) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const base64Image = e.target.result;
+                    localStorage.setItem(getAvatarKey(activeUser), base64Image);
+                    document.getElementById('userAvatarDisplay').style.backgroundImage = `url('${base64Image}')`;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function loadUserAvatar() {
+            if (activeUser) {
+                const savedAvatar = localStorage.getItem(getAvatarKey(activeUser));
+                if (savedAvatar) {
+                    document.getElementById('userAvatarDisplay').style.backgroundImage = `url('${savedAvatar}')`;
+                } else {
+                    document.getElementById('userAvatarDisplay').style.backgroundImage =
+                        `url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2240%22 height=%2240%22 viewBox=%220 0 24 24%22 fill=%22%2394a3b8%22><path d=%22M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z%22/></svg>')`;
+                }
+            }
+        }
+
+        // ============ AUTH ============
+        function handleRegister() {
+            const phone = document.getElementById('regPhone').value.trim();
+            const pass = document.getElementById('regPass').value;
+            if (!phone || !pass) { alert("ဖြည့်ပါ"); return; }
+            let users = JSON.parse(localStorage.getItem('users2DDatabase') || '{}');
+            if (users[phone] || phone === 'admin') { alert("မရပါ"); return; }
+            users[phone] = pass;
+            localStorage.setItem('users2DDatabase', JSON.stringify(users));
+            // ✅ အကောင့်သစ်ဖွင့်ရင် လက်ကျန် 0 ထားမည်
+            localStorage.setItem(getBalanceKey(phone), '0');
+            alert("အကောင့်ဖွင့်ပြီးပါပြီ");
+            loginUser(phone);
+        }
+
+        function handleLogin() {
+            const id = document.getElementById('loginId').value.trim();
+            const pass = document.getElementById('loginPass').value;
+            if (!id || !pass) { alert("ဖြည့်ပါ"); return; }
+            if (id === 'admin') {
+                if (pass === (localStorage.getItem('adminPassword') || '9999')) {
+                    window.location.href = 'admin.html';
+                } else alert("စကားဝှက်မှား");
+                return;
+            }
+            let users = JSON.parse(localStorage.getItem('users2DDatabase') || '{}');
+            if (users[id] === pass) loginUser(id);
+            else alert("မှားယွင်းနေပါသည်");
+        }
+
+        function loginUser(phone) {
+            activeUser = phone;
+            localStorage.setItem('current2DUser', phone);
+            // ✅ လက်ကျန် key မရှိရင်လည်း 0 ထားမည်
+            if (!localStorage.getItem(getBalanceKey(phone))) {
+                localStorage.setItem(getBalanceKey(phone), '0');
+            }
+            showSection('dashboardSection');
+            loadUserAvatar();
+            updateDashboardUI();
+        }
+
+        // ============ BETTING ============
+        function isBettingAllowed() { return localStorage.getItem('betting_status') !== 'OFF'; }
+
+        function place2DBet() {
+            if (!isBettingAllowed()) { alert("ထိုးခွင့်ပိတ်ထားပါသည်"); return; }
+            const num = document.getElementById('betNumber').value.trim();
+            const amt = parseInt(document.getElementById('betAmount').value);
+            if (!activeUser) return;
+            let bal = parseInt(localStorage.getItem(getBalanceKey(activeUser)) || '0');
+            if (num.length !== 2 || isNaN(amt) || amt <= 0 || amt > bal) { alert("အချက်အလက်မှား"); return; }
+            localStorage.setItem(getBalanceKey(activeUser), (bal - amt).toString());
+            let bets = JSON.parse(localStorage.getItem('twod_bets') || '[]');
+            bets.push({ user: activeUser, number: num, amount: amt, status: 'PENDING', date: getFormattedDateTime() });
+            localStorage.setItem('twod_bets', JSON.stringify(bets));
+            alert("2D ထိုးပြီး");
+            document.getElementById('betNumber').value = '';
+            document.getElementById('betAmount').value = '';
+            updateDashboardUI();
+        }
+
+        function place3DBet() {
+            if (!isBettingAllowed()) { alert("ထိုးခွင့်ပိတ်ထားပါသည်"); return; }
+            const num = document.getElementById('betNumber3D').value.trim();
+            const amt = parseInt(document.getElementById('betAmount3D').value);
+            if (!activeUser) return;
+            let bal = parseInt(localStorage.getItem(getBalanceKey(activeUser)) || '0');
+            if (num.length !== 3 || isNaN(amt) || amt <= 0 || amt > bal) { alert("အချက်အလက်မှား"); return; }
+            localStorage.setItem(getBalanceKey(activeUser), (bal - amt).toString());
+            let bets = JSON.parse(localStorage.getItem('bets3D') || '[]');
+            bets.push({ user: activeUser, number: num, amount: amt, status: 'PENDING', date: getFormattedDateTime() });
+            localStorage.setItem('bets3D', JSON.stringify(bets));
+            alert("3D ထိုးပြီး");
+            document.getElementById('betNumber3D').value = '';
+            document.getElementById('betAmount3D').value = '';
+            updateDashboardUI();
+        }
+
+        // ============ DASHBOARD UI UPDATE ============
+        function updateDashboardUI() {
+            if (!activeUser) return;
+            document.getElementById('userPhone').innerText = activeUser;
+            let bal = parseInt(localStorage.getItem(getBalanceKey(activeUser)) || '0');
+            document.getElementById('userBalance').innerText = bal.toLocaleString();
+            document.getElementById('currentDate').innerText = getFormattedDateTime();
+
+            // 2D logs
+            let all2D = JSON.parse(localStorage.getItem('twod_bets') || '[]').filter(b => b.user === activeUser)
+                .reverse();
+            let h2 = '';
+            all2D.forEach(b => {
+                let st = b.status === 'WIN' ? 'နိုင်' : (b.status === 'LOSE' ? 'ရှုံး' : 'စောင့်ဆိုင်း');
+                let sc = b.status === 'WIN' ? 'bg-win' : (b.status === 'LOSE' ? 'bg-lose' : 'bg-pending');
+                h2 +=
+                    `<tr><td>${b.date}</td><td>${b.number}</td><td>${b.amount.toLocaleString()}</td><td><span class="badge ${sc}">${st}</span></td></tr>`;
+            });
+            document.getElementById('betLogsBody').innerHTML = h2 || '<tr><td colspan="4">မရှိပါ</td></tr>';
+
+            // 3D logs
+            let all3D = JSON.parse(localStorage.getItem('bets3D') || '[]').filter(b => b.user === activeUser).reverse();
+            let h3 = '';
+            all3D.forEach(b => {
+                let st = b.status === 'WIN' ? 'နိုင်' : (b.status === 'LOSE' ? 'ရှုံး' : 'စောင့်ဆိုင်း');
+                let sc = b.status === 'WIN' ? 'bg-win' : (b.status === 'LOSE' ? 'bg-lose' : 'bg-pending');
+                h3 +=
+                    `<tr><td>${b.date}</td><td>${b.number}</td><td>${b.amount.toLocaleString()}</td><td><span class="badge ${sc}">${st}</span></td></tr>`;
+            });
+            document.getElementById('betLogs3DBody').innerHTML = h3 || '<tr><td colspan="4">မရှိပါ</td></tr>';
+
+            // Transaction logs for modal
+            let depReqs = JSON.parse(localStorage.getItem('deposit_requests') || '[]')
+                .filter(r => r.user === activeUser)
+                .map(r => ({ ...r, type: 'DEPOSIT' }));
+            let wReqs = JSON.parse(localStorage.getItem('withdraw_requests') || '[]')
+                .filter(r => r.user === activeUser)
+                .map(r => ({ ...r, type: 'WITHDRAW' }));
+            let allTransactions = [...depReqs, ...wReqs].sort((a, b) => new Date(b.date) - new Date(a.date));
+            let transHtml = '';
+            allTransactions.forEach(r => {
+                let st = r.status === 'APPROVED' ? 'အတည်ပြုပြီး' : (r.status === 'REJECTED' ? 'ငြင်းပယ်' :
+                    'စောင့်ဆိုင်း');
+                let sc = r.status === 'APPROVED' ? 'bg-approved' : (r.status === 'REJECTED' ? 'bg-rejected' :
+                    'bg-pending');
+                let typeLabel = r.type === 'DEPOSIT' ? '💰 ငွေသွင်း' : '💸 Ngwe Thout';
+                transHtml +=
+                    `<tr><td>${r.date}</td><td>${typeLabel}</td><td>${(r.amount || 0).toLocaleString()}</td><td><span class="badge ${sc}">${st}</span></td></tr>`;
+            });
+            document.getElementById('modalTransactionLogsBody').innerHTML = transHtml ||
+                '<tr><td colspan="4">မှတ်တမ်းမရှိသေးပါ</td></tr>';
+        }
+
+        function openTransactionModal() {
+            updateDashboardUI();
+            document.getElementById('transactionModal').style.display = 'flex';
+        }
+
+        function logout() {
+            localStorage.removeItem('current2DUser');
+            activeUser = null;
+            location.reload();
+        }
+
+        // ============ PAYMENT / DEPOSIT ============
+        let currentDepositPayment = 'kpay';
+        let currentWithdrawPayment = 'kpay';
+
+        function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+        function selectPayment(type, method) {
+            if (type === 'deposit') {
+                currentDepositPayment = method;
+                document.getElementById('btnKpay').classList.toggle('active', method === 'kpay');
+                document.getElementById('btnWave').classList.toggle('active', method === 'wave');
+            } else {
+                currentWithdrawPayment = method;
+                document.getElementById('btnWithdrawKpay').classList.toggle('active', method === 'kpay');
+                document.getElementById('btnWithdrawWave').classList.toggle('active', method === 'wave');
+            }
+        }
+
+        function setDepositAmount(amt) { document.getElementById('depAmt').value = amt; }
+
+        function proceedToTransfer() {
+            const amt = document.getElementById('depAmt').value;
+            if (!amt || amt < 2000) { alert('2000 ကျပ်အထက် ဖြည့်ပါ'); return; }
+            closeModal('depositModal');
+
+            // 📥 ဒိုင် (Admin) ဘက်က သတ်မှတ်ထားတဲ့ KPay / Wave အချက်အလက်တွေကို localStorage ထဲက ဆွဲထုတ်ယူခြင်း
+            const adminKpayName = localStorage.getItem('payment_kpay_name') || 'Ma Nwe Nwe Aye';
+            const adminKpayPhone = localStorage.getItem('payment_kpay_phone') || '0978123456';
+            const adminWaveName = localStorage.getItem('payment_wave_name') || 'Khaing Oo';
+            const adminWavePhone = localStorage.getItem('payment_wave_phone') || '0925987654';
+
+            // 🔄 HTML ထဲက id တွေနေရာမှာ ဒိုင်ပြင်ထားတဲ့ text တွေကို Dynamic သွားထည့်ပေးခြင်း
+            document.getElementById('kpayNameDisplay').innerText = adminKpayName;
+            document.getElementById('kpayPhoneDisplay').innerText = adminKpayPhone;
+            document.getElementById('waveNameDisplay').innerText = adminWaveName;
+            document.getElementById('wavePhoneDisplay').innerText = adminWavePhone;
+
+            // ပမာဏ ပြပေးခြင်း
+            document.getElementById(currentDepositPayment + 'FinalAmount').innerText = parseInt(amt).toLocaleString() +
+                ' MMK';
+            openModal(currentDepositPayment + 'TransferModal');
+        }
+
+        function submitDeposit(type) {
+            const tx = document.getElementById(type + 'TxCode').value;
+            const name = document.getElementById(type + 'SenderName').value;
+            const amt = parseInt(document.getElementById('depAmt').value) || 0;
+            if (tx.length < 5 || !name) { alert('အချက်အလက်ဖြည့်ပါ'); return; }
+            let reqs = JSON.parse(localStorage.getItem('deposit_requests') || '[]');
+            reqs.push({
+                id: Date.now().toString(36) + Math.random().toString(36).substr(2, 5),
+                user: activeUser,
+                amount: amt,
+                method: type,
+                txCode: tx,
+                senderName: name,
+                status: 'PENDING',
+                date: getFormattedDateTime()
+            });
+            localStorage.setItem('deposit_requests', JSON.stringify(reqs));
+            alert('ငွေဖြည့်တောင်းဆိုချက် ပေးပို့ပြီးပါပြီ');
+            closeModal(type + 'TransferModal');
+            document.getElementById('depAmt').value = 5000;
+            updateDashboardUI();
+        }
+function submitWithdraw() {
+    const method = currentWithdrawPayment; // 'kpay' သို့မဟုတ် 'wave'
+    
+    // 🔍 HTML ထဲရှိ Input ID အစစ်အမှန်များနှင့် ကွက်တိ ညှိယူခြင်း
+    const amt = parseInt(document.getElementById('withdrawAmount').value);
+    const name = document.getElementById('withdrawReceiverName').value.trim();
+    const phone = document.getElementById('withdrawAccount').value.trim(); 
+    
+    // 👤 လက်ရှိ Login ဝင်ထားသော User ကို အမှန်ကန်ဆုံး ယူခြင်း
+    const user = activeUser; 
+    if (!user) { alert('ကျေးဇူးပြု၍ လော့ဂ်အင် အရင်ဝင်ပါ'); return; }
+    
+    // 💰 ၎င်း User ၏ လက်ကျန်ငွေ Key အမှန်ကို ဖတ်ခြင်း
+    let bal = parseInt(localStorage.getItem(getBalanceKey(user)) || '0');
+    
+    // 🛑 အချက်အလက် စစ်ဆေးမှုများ
+    if (!amt || amt < 1000) { alert('၁၀၀၀ ကျပ်အထက် ထုတ်ပေးပါ'); return; }
+    if (!name || !phone) { alert('အချက်အလက်များ ပြည့်စုံအောင် ဖြည့်ပါ'); return; }
+    if (bal < amt) { alert('လက်ကျန်ငွေ မလုံလောက်ပါ'); return; }
+    
+    // 💸 လက်ကျန်ငွေကို ချက်ချင်းနုတ်ပြီး သိမ်းမည်
+    localStorage.setItem(getBalanceKey(user), (bal - amt).toString());
+    
+    // 📂 ငွေထုတ်စာရင်း ဒေတာဘေ့စ်ထဲသို့ သိမ်းဆည်းခြင်း
+    let reqs = JSON.parse(localStorage.getItem('withdraw_requests') || '[]');
+    reqs.push({
+        id: 'W' + Date.now(),
+        user: user,       // အသုံးပြုသူ ID
+        amount: amt,      // ထုတ်ငွေပမာဏ
+        method: method,   // ငွေထုတ်နည်းလမ်း
+        name: name,       // အကောင့်အမည် (ဥပမာ - WHEN)
+        account: phone,   // ✨ အရေးကြီးဆုံးဖြစ်သော ဒိုင်ချုပ်ဘက်သို့ ပြသမည့် ဖုန်းနံပါတ်/အကောင့်
+        status: 'PENDING',
+        date: getFormattedDateTime() // မှတ်တမ်းအတွက် အချိန်ထည့်ခြင်း
+    });
+    
+    localStorage.setItem('withdraw_requests', JSON.stringify(reqs));
+    closeModal('withdrawModal');
+    
+    // 🔄 Form များကို Blank ပြန်လုပ်ပေးခြင်း
+    document.getElementById('withdrawAmount').value = '';
+    document.getElementById('withdrawReceiverName').value = '';
+    document.getElementById('withdrawAccount').value = '';
+    
+    // 📊 Dashboard UI ကို ချက်ချင်း Update လုပ်ခြင်း
+    updateDashboardUI(); 
+    
+    alert('ငွေထုတ်တောင်းဆိုချက် တင်ပြီးပါပြီ။ ဒိုင်ချုပ်မှ အတည်ပြုပေးပါလိမ့်မည်။');
+}
+
+
+        function copyText(txt) { navigator.clipboard.writeText(txt).then(() => alert('ကူးယူပြီး')); }
+
+        // ============ AUTO LOGIN ============
+        if (activeUser) {
+            let users = JSON.parse(localStorage.getItem('users2DDatabase') || '{}');
+            if (users[activeUser]) {
+                loginUser(activeUser);
+            } else {
+                localStorage.removeItem('current2DUser');
+            }
+        }
+    </script>
+</body>
+</html>

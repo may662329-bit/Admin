@@ -3,6 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <!-- ⬇️ Telegram Web App SDK ချိတ်ဆက်ခြင်း -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <!-- ⬇️ MD5 Encryption အလုပ်လုပ်ရန် ကူညီပေးမည့် Library (အသစ်ထည့်သွင်းထားသည်) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/blueimp-md5/2.19.0/js/md5.min.js"></script>
+    
     <title>Anoma 2D — User</title>
     <style>
         * {
@@ -97,7 +102,6 @@
             font-weight: 500;
         }
 
-        /* ✨ CYBERPUNK NEON GLOW BORDER EFFECT */
         .user-header,
         .section-card {
             position: relative;
@@ -137,12 +141,8 @@
         }
 
         @keyframes rotateNeonGlow {
-            0% {
-                transform: rotate(0deg);
-            }
-            100% {
-                transform: rotate(360deg);
-            }
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         .user-header>*,
@@ -151,7 +151,6 @@
             z-index: 2;
         }
 
-        /* ✨ အကောင့်လက်ကျန် ပြတဲ့နေရာ — GLOW & SHINE */
         .balance-amount {
             font-size: 28px;
             font-weight: bold;
@@ -176,22 +175,15 @@
             left: -150%;
             width: 60%;
             height: 100%;
-            background: linear-gradient(90deg,
-                    transparent 0%,
-                    rgba(255, 255, 255, 0.35) 50%,
-                    transparent 100%);
+            background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.35) 50%, transparent 100%);
             transform: skewX(-25deg);
             z-index: 2;
             animation: balanceShine 3.2s infinite ease-in-out;
         }
 
         @keyframes balanceShine {
-            0% {
-                left: -150%;
-            }
-            100% {
-                left: 150%;
-            }
+            0% { left: -150%; }
+            100% { left: 150%; }
         }
 
         .log-table {
@@ -215,26 +207,12 @@
             font-size: 10px;
             font-weight: bold;
         }
-        .bg-pending {
-            background: #f59e0b;
-            color: #0f172a;
-        }
-        .bg-win {
-            background: #10b981;
-            color: white;
-        }
-        .bg-lose {
-            background: #ef4444;
-            color: white;
-        }
-        .bg-approved {
-            background: #10b981;
-            color: white;
-        }
-        .bg-rejected {
-            background: #ef4444;
-            color: white;
-        }
+        .bg-pending { background: #f59e0b; color: #0f172a; }
+        .bg-win { background: #10b981; color: white; }
+        .bg-lose { background: #ef4444; color: white; }
+        .bg-approved { background: #10b981; color: white; }
+        .bg-rejected { background: #ef4444; color: white; }
+        
         .hidden {
             display: none !important;
         }
@@ -255,7 +233,6 @@
             font-size: 13px;
         }
 
-        /* AVATAR DESIGN STYLE */
         .user-profile-area {
             display: flex;
             align-items: center;
@@ -300,7 +277,6 @@
             box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
         }
 
-        /* Modal Styles */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -420,18 +396,14 @@
             white-space: nowrap;
         }
         @keyframes marquee {
-            0% {
-                transform: translate(0, 0);
-            }
-            100% {
-                transform: translate(-100%, 0);
-            }
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(-100%, 0); }
         }
     </style>
 </head>
 <body>
     <div class="app-container">
-        <!-- LOGIN -->
+        <!-- LOGIN SECTION -->
         <div id="loginSection">
             <div class="app-logo">💰</div>
             <h2>Anoma 2D</h2>
@@ -448,7 +420,7 @@
             <span class="toggle-link" onclick="showSection('registerSection')">🆕 အကောင့်သစ်ဖွင့်ရန်</span>
         </div>
 
-        <!-- REGISTER -->
+        <!-- REGISTER SECTION -->
         <div id="registerSection" class="hidden">
             <div class="app-logo">📝</div>
             <h2>အကောင့်သစ်ဖွင့်ရန်</h2>
@@ -465,7 +437,7 @@
             <span class="toggle-link" onclick="showSection('loginSection')" style="color:#94a3b8;">🔙 လော့ဂ်အင်ပြန်ဝင်ရန်</span>
         </div>
 
-        <!-- DASHBOARD -->
+        <!-- DASHBOARD SECTION -->
         <div id="dashboardSection" class="hidden">
             <div class="glow-shine-box" style="padding: 10px; margin-bottom: 14px; white-space: nowrap;">
                 <span class="moving-text" id="topMarqueeText">🙋🏻‍♂️ရန်ကုန်သား</span>
@@ -632,7 +604,6 @@
         let activeUser = localStorage.getItem('current2DUser') || null;
 
         function getBalanceKey(phone) { return 'balance_' + phone; }
-
         function getAvatarKey(phone) { return 'avatar_' + phone; }
 
         // ============ SECTION SWITCHING ============
@@ -645,8 +616,7 @@
 
         function getFormattedDateTime() {
             const now = new Date();
-            return now.toLocaleDateString('my-MM') + '၊ ' + now.toLocaleTimeString('my-MM', { hour: '2-digit',
-                minute: '2-digit' });
+            return now.toLocaleDateString('my-MM') + '၊ ' + now.toLocaleTimeString('my-MM', { hour: '2-digit', minute: '2-digit' });
         }
 
         // ============ AVATAR ============
@@ -684,7 +654,6 @@
             if (users[phone] || phone === 'admin') { alert("မရပါ"); return; }
             users[phone] = pass;
             localStorage.setItem('users2DDatabase', JSON.stringify(users));
-            // ✅ အကောင့်သစ်ဖွင့်ရင် လက်ကျန် 0 ထားမည်
             localStorage.setItem(getBalanceKey(phone), '0');
             alert("အကောင့်ဖွင့်ပြီးပါပြီ");
             loginUser(phone);
@@ -694,12 +663,6 @@
             const id = document.getElementById('loginId').value.trim();
             const pass = document.getElementById('loginPass').value;
             if (!id || !pass) { alert("ဖြည့်ပါ"); return; }
-            if (id === 'admin') {
-                if (pass === (localStorage.getItem('adminPassword') || '9999')) {
-                    window.location.href = 'admin.html';
-                } else alert("စကားဝှက်မှား");
-                return;
-            }
             let users = JSON.parse(localStorage.getItem('users2DDatabase') || '{}');
             if (users[id] === pass) loginUser(id);
             else alert("မှားယွင်းနေပါသည်");
@@ -708,7 +671,6 @@
         function loginUser(phone) {
             activeUser = phone;
             localStorage.setItem('current2DUser', phone);
-            // ✅ လက်ကျန် key မရှိရင်လည်း 0 ထားမည်
             if (!localStorage.getItem(getBalanceKey(phone))) {
                 localStorage.setItem(getBalanceKey(phone), '0');
             }
@@ -762,49 +724,35 @@
             document.getElementById('userBalance').innerText = bal.toLocaleString();
             document.getElementById('currentDate').innerText = getFormattedDateTime();
 
-            // 2D logs
-            let all2D = JSON.parse(localStorage.getItem('twod_bets') || '[]').filter(b => b.user === activeUser)
-                .reverse();
+            let all2D = JSON.parse(localStorage.getItem('twod_bets') || '[]').filter(b => b.user === activeUser).reverse();
             let h2 = '';
             all2D.forEach(b => {
                 let st = b.status === 'WIN' ? 'နိုင်' : (b.status === 'LOSE' ? 'ရှုံး' : 'စောင့်ဆိုင်း');
                 let sc = b.status === 'WIN' ? 'bg-win' : (b.status === 'LOSE' ? 'bg-lose' : 'bg-pending');
-                h2 +=
-                    `<tr><td>${b.date}</td><td>${b.number}</td><td>${b.amount.toLocaleString()}</td><td><span class="badge ${sc}">${st}</span></td></tr>`;
+                h2 += `<tr><td>${b.date}</td><td>${b.number}</td><td>${b.amount.toLocaleString()}</td><td><span class="badge ${sc}">${st}</span></td></tr>`;
             });
             document.getElementById('betLogsBody').innerHTML = h2 || '<tr><td colspan="4">မရှိပါ</td></tr>';
 
-            // 3D logs
             let all3D = JSON.parse(localStorage.getItem('bets3D') || '[]').filter(b => b.user === activeUser).reverse();
             let h3 = '';
             all3D.forEach(b => {
                 let st = b.status === 'WIN' ? 'နိုင်' : (b.status === 'LOSE' ? 'ရှုံး' : 'စောင့်ဆိုင်း');
                 let sc = b.status === 'WIN' ? 'bg-win' : (b.status === 'LOSE' ? 'bg-lose' : 'bg-pending');
-                h3 +=
-                    `<tr><td>${b.date}</td><td>${b.number}</td><td>${b.amount.toLocaleString()}</td><td><span class="badge ${sc}">${st}</span></td></tr>`;
+                h3 += `<tr><td>${b.date}</td><td>${b.number}</td><td>${b.amount.toLocaleString()}</td><td><span class="badge ${sc}">${st}</span></td></tr>`;
             });
             document.getElementById('betLogs3DBody').innerHTML = h3 || '<tr><td colspan="4">မရှိပါ</td></tr>';
 
-            // Transaction logs for modal
-            let depReqs = JSON.parse(localStorage.getItem('deposit_requests') || '[]')
-                .filter(r => r.user === activeUser)
-                .map(r => ({ ...r, type: 'DEPOSIT' }));
-            let wReqs = JSON.parse(localStorage.getItem('withdraw_requests') || '[]')
-                .filter(r => r.user === activeUser)
-                .map(r => ({ ...r, type: 'WITHDRAW' }));
+            let depReqs = JSON.parse(localStorage.getItem('deposit_requests') || '[]').filter(r => r.user === activeUser).map(r => ({ ...r, type: 'DEPOSIT' }));
+            let wReqs = JSON.parse(localStorage.getItem('withdraw_requests') || '[]').filter(r => r.user === activeUser).map(r => ({ ...r, type: 'WITHDRAW' }));
             let allTransactions = [...depReqs, ...wReqs].sort((a, b) => new Date(b.date) - new Date(a.date));
             let transHtml = '';
             allTransactions.forEach(r => {
-                let st = r.status === 'APPROVED' ? 'အတည်ပြုပြီး' : (r.status === 'REJECTED' ? 'ငြင်းပယ်' :
-                    'စောင့်ဆိုင်း');
-                let sc = r.status === 'APPROVED' ? 'bg-approved' : (r.status === 'REJECTED' ? 'bg-rejected' :
-                    'bg-pending');
+                let st = r.status === 'APPROVED' ? 'အတည်ပြုပြီး' : (r.status === 'REJECTED' ? 'ငြင်းပယ်' : 'စောင့်ဆိုင်း');
+                let sc = r.status === 'APPROVED' ? 'bg-approved' : (r.status === 'REJECTED' ? 'bg-rejected' : 'bg-pending');
                 let typeLabel = r.type === 'DEPOSIT' ? '💰 ငွေသွင်း' : '💸 Ngwe Thout';
-                transHtml +=
-                    `<tr><td>${r.date}</td><td>${typeLabel}</td><td>${(r.amount || 0).toLocaleString()}</td><td><span class="badge ${sc}">${st}</span></td></tr>`;
+                transHtml += `<tr><td>${r.date}</td><td>${typeLabel}</td><td>${(r.amount || 0).toLocaleString()}</td><td><span class="badge ${sc}">${st}</span></td></tr>`;
             });
-            document.getElementById('modalTransactionLogsBody').innerHTML = transHtml ||
-                '<tr><td colspan="4">မှတ်တမ်းမရှိသေးပါ</td></tr>';
+            document.getElementById('modalTransactionLogsBody').innerHTML = transHtml || '<tr><td colspan="4">မှတ်တမ်းမရှိသေးပါ</td></tr>';
         }
 
         function openTransactionModal() {
@@ -823,7 +771,6 @@
         let currentWithdrawPayment = 'kpay';
 
         function openModal(id) { document.getElementById(id).style.display = 'flex'; }
-
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
         function selectPayment(type, method) {
@@ -838,6 +785,7 @@
             }
         }
 
+        document.copyText = copyText;
         function setDepositAmount(amt) { document.getElementById('depAmt').value = amt; }
 
         function proceedToTransfer() {
@@ -845,21 +793,17 @@
             if (!amt || amt < 2000) { alert('2000 ကျပ်အထက် ဖြည့်ပါ'); return; }
             closeModal('depositModal');
 
-            // 📥 ဒိုင် (Admin) ဘက်က သတ်မှတ်ထားတဲ့ KPay / Wave အချက်အလက်တွေကို localStorage ထဲက ဆွဲထုတ်ယူခြင်း
             const adminKpayName = localStorage.getItem('payment_kpay_name') || 'Ma Nwe Nwe Aye';
             const adminKpayPhone = localStorage.getItem('payment_kpay_phone') || '0978123456';
             const adminWaveName = localStorage.getItem('payment_wave_name') || 'Khaing Oo';
             const adminWavePhone = localStorage.getItem('payment_wave_phone') || '0925987654';
 
-            // 🔄 HTML ထဲက id တွေနေရာမှာ ဒိုင်ပြင်ထားတဲ့ text တွေကို Dynamic သွားထည့်ပေးခြင်း
             document.getElementById('kpayNameDisplay').innerText = adminKpayName;
             document.getElementById('kpayPhoneDisplay').innerText = adminKpayPhone;
             document.getElementById('waveNameDisplay').innerText = adminWaveName;
             document.getElementById('wavePhoneDisplay').innerText = adminWavePhone;
 
-            // ပမာဏ ပြပေးခြင်း
-            document.getElementById(currentDepositPayment + 'FinalAmount').innerText = parseInt(amt).toLocaleString() +
-                ' MMK';
+            document.getElementById(currentDepositPayment + 'FinalAmount').innerText = parseInt(amt).toLocaleString() + ' MMK';
             openModal(currentDepositPayment + 'TransferModal');
         }
 
@@ -885,68 +829,105 @@
             document.getElementById('depAmt').value = 5000;
             updateDashboardUI();
         }
-function submitWithdraw() {
-    const method = currentWithdrawPayment; // 'kpay' သို့မဟုတ် 'wave'
-    
-    // 🔍 HTML ထဲရှိ Input ID အစစ်အမှန်များနှင့် ကွက်တိ ညှိယူခြင်း
-    const amt = parseInt(document.getElementById('withdrawAmount').value);
-    const name = document.getElementById('withdrawReceiverName').value.trim();
-    const phone = document.getElementById('withdrawAccount').value.trim(); 
-    
-    // 👤 လက်ရှိ Login ဝင်ထားသော User ကို အမှန်ကန်ဆုံး ယူခြင်း
-    const user = activeUser; 
-    if (!user) { alert('ကျေးဇူးပြု၍ လော့ဂ်အင် အရင်ဝင်ပါ'); return; }
-    
-    // 💰 ၎င်း User ၏ လက်ကျန်ငွေ Key အမှန်ကို ဖတ်ခြင်း
-    let bal = parseInt(localStorage.getItem(getBalanceKey(user)) || '0');
-    
-    // 🛑 အချက်အလက် စစ်ဆေးမှုများ
-    if (!amt || amt < 1000) { alert('၁၀၀၀ ကျပ်အထက် ထုတ်ပေးပါ'); return; }
-    if (!name || !phone) { alert('အချက်အလက်များ ပြည့်စုံအောင် ဖြည့်ပါ'); return; }
-    if (bal < amt) { alert('လက်ကျန်ငွေ မလုံလောက်ပါ'); return; }
-    
-    // 💸 လက်ကျန်ငွေကို ချက်ချင်းနုတ်ပြီး သိမ်းမည်
-    localStorage.setItem(getBalanceKey(user), (bal - amt).toString());
-    
-    // 📂 ငွေထုတ်စာရင်း ဒေတာဘေ့စ်ထဲသို့ သိမ်းဆည်းခြင်း
-    let reqs = JSON.parse(localStorage.getItem('withdraw_requests') || '[]');
-    reqs.push({
-        id: 'W' + Date.now(),
-        user: user,       // အသုံးပြုသူ ID
-        amount: amt,      // ထုတ်ငွေပမာဏ
-        method: method,   // ငွေထုတ်နည်းလမ်း
-        name: name,       // အကောင့်အမည် (ဥပမာ - WHEN)
-        account: phone,   // ✨ အရေးကြီးဆုံးဖြစ်သော ဒိုင်ချုပ်ဘက်သို့ ပြသမည့် ဖုန်းနံပါတ်/အကောင့်
-        status: 'PENDING',
-        date: getFormattedDateTime() // မှတ်တမ်းအတွက် အချိန်ထည့်ခြင်း
-    });
-    
-    localStorage.setItem('withdraw_requests', JSON.stringify(reqs));
-    closeModal('withdrawModal');
-    
-    // 🔄 Form များကို Blank ပြန်လုပ်ပေးခြင်း
-    document.getElementById('withdrawAmount').value = '';
-    document.getElementById('withdrawReceiverName').value = '';
-    document.getElementById('withdrawAccount').value = '';
-    
-    // 📊 Dashboard UI ကို ချက်ချင်း Update လုပ်ခြင်း
-    updateDashboardUI(); 
-    
-    alert('ငွေထုတ်တောင်းဆိုချက် တင်ပြီးပါပြီ။ ဒိုင်ချုပ်မှ အတည်ပြုပေးပါလိမ့်မည်။');
-}
 
+        function submitWithdraw() {
+            const method = currentWithdrawPayment;
+            const amt = parseInt(document.getElementById('withdrawAmount').value);
+            const name = document.getElementById('withdrawReceiverName').value.trim();
+            const phone = document.getElementById('withdrawAccount').value.trim(); 
+            
+            const user = activeUser; 
+            if (!user) { alert('ကျေးဇူးပြု၍ လော့ဂ်အင် အရင်ဝင်ပါ'); return; }
+            
+            let bal = parseInt(localStorage.getItem(getBalanceKey(user)) || '0');
+            
+            if (!amt || amt < 1000) { alert('၁၀၀၀ ကျပ်အထက် ထုတ်ပေးပါ'); return; }
+            if (!name || !phone) { alert('အချက်အလက်များ ပြည့်စုံအောင် ဖြည့်ပါ'); return; }
+            if (bal < amt) { alert('လက်ကျန်ငွေ မလုံလောက်ပါ'); return; }
+            
+            localStorage.setItem(getBalanceKey(user), (bal - amt).toString());
+            
+            let reqs = JSON.parse(localStorage.getItem('withdraw_requests') || '[]');
+            reqs.push({
+                id: 'W' + Date.now(),
+                user: user,
+                amount: amt,
+                method: method,
+                name: name,
+                account: phone,
+                status: 'PENDING',
+                date: getFormattedDateTime()
+            });
+            
+            localStorage.setItem('withdraw_requests', JSON.stringify(reqs));
+            closeModal('withdrawModal');
+            
+            document.getElementById('withdrawAmount').value = '';
+            document.getElementById('withdrawReceiverName').value = '';
+            document.getElementById('withdrawAccount').value = '';
+            
+            updateDashboardUI(); 
+            alert('ငွေထုတ်တောင်းဆိုချက် တင်ပြီးပါပြီ။ ဒိုင်ချုပ်မှ အတည်ပြုပေးပါလိမ့်မည်။');
+        }
 
         function copyText(txt) { navigator.clipboard.writeText(txt).then(() => alert('ကူးယူပြီး')); }
 
-        // ============ AUTO LOGIN ============
-        if (activeUser) {
-            let users = JSON.parse(localStorage.getItem('users2DDatabase') || '{}');
-            if (users[activeUser]) {
-                loginUser(activeUser);
-            } else {
-                localStorage.removeItem('current2DUser');
+        // ============ 🔄 TELEGRAM AUTO LOGIN & ROUTING SYSTEM ============
+        window.addEventListener('DOMContentLoaded', function() {
+            // Telegram Mini App ထဲမှာ ရောက်နေသလား စစ်ဆေးခြင်း
+            if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe) {
+                const tgUser = window.Telegram.WebApp.initDataUnsafe.user;
+                
+                if (tgUser && tgUser.id) {
+                    const tgId = tgUser.id.toString(); // Telegram User ID
+                    
+                    // 🔐 ဒိုင်ချုပ် Admin ရဲ့ Telegram ID ဖြစ်တဲ့ "7443696261" ကို MD5 ပြောင်းလဲထားတဲ့ အမှန်ကန်ဆုံး Hash ကုဒ်
+                    const ADMIN_HASH = "a4be196328329b35bc20e2ef9a909a47"; 
+                    
+                    // ရိုက်ထည့်စရာမလိုဘဲ tgId ကို MD5 ပြောင်းပြီး တိုက်စစ်သည်
+                    if (md5(tgId) === ADMIN_HASH) {
+                        // ✅ ဒိုင်ချုပ် ဖုန်းဖြစ်ပါက Admin Panel ဆီသို့ တိုက်ရိုက် လမ်းကြောင်းလွှဲမည်
+                        localStorage.setItem('current2DUser', tgId);
+                        localStorage.setItem('admin_session_hash', ADMIN_HASH); // Admin ကို တန်းဝင်ခွင့်ပေးရန် session ပါမှတ်မည်
+                        window.location.href = 'admin.html';
+                        return;
+                    } else {
+                        // 👤 သာမန် User ဖြစ်ပါက Dashboard သို့ အလိုအလျောက် Login ဝင်ပေးမည်
+                        localStorage.setItem('current2DUser', tgId);
+                        
+                        if (!localStorage.getItem(getBalanceKey(tgId))) {
+                            localStorage.setItem(getBalanceKey(tgId), '0');
+                        }
+                        
+                        // User Database ထဲတွင် မရှိသေးပါက Default စကားဝှက်ဖြင့် မှတ်တမ်းသွင်းမည်
+                        let users = JSON.parse(localStorage.getItem('users2DDatabase') || '{}');
+                        if (!users[tgId]) {
+                            users[tgId] = 'tg_auto';
+                            localStorage.setItem('users2DDatabase', JSON.stringify(users));
+                        }
+                        
+                        activeUser = tgId;
+                        showSection('dashboardSection');
+                        loadUserAvatar();
+                        updateDashboardUI();
+                        return;
+                    }
+                }
             }
-        }
+            
+            // Telegram Mini App မဟုတ်ဘဲ ပြင်ပ Browser (Chrome/Safari) များမှ ဝင်လာပါက ပုံမှန်အတိုင်း Login Form ပြပေးမည်
+            if (activeUser) {
+                let users = JSON.parse(localStorage.getItem('users2DDatabase') || '{}');
+                if (users[activeUser]) {
+                    loginUser(activeUser);
+                } else {
+                    localStorage.removeItem('current2DUser');
+                    showSection('loginSection');
+                }
+            } else {
+                showSection('loginSection');
+            }
+        });
     </script>
 </body>
 </html>

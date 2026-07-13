@@ -1,0 +1,662 @@
+// ============ DATABASE INIT ============
+if (!localStorage.getItem('users2DDatabase')) {
+  localStorage.setItem('users2DDatabase', JSON.stringify({ "09123456789": "1234" }));
+}
+let activeUser = localStorage.getItem('current2DUser') || null;
+
+function getBalanceKey(phone) { return 'balance_' + phone; }
+function getAvatarKey(phone) { return 'avatar_' + phone; }
+
+// ============ GOOGLE LOGIN ============
+window.loginWithGoogle = function() {
+  auth.signInWithPopup(provider)
+    .then((result) => {
+      const user = result.user;
+      const email = user.email;
+      
+      let users = JSON.parse(localStorage.getItem('users2DDatabase') || '{}');
+      if (!users[email]) {
+        users[email] = 'GOOGLE_AUTH';
+        localStorage.setItem('users2DDatabase', JSON.stringify(users));
+        localStorage.setItem(getBalanceKey(email), '0');
+      }
+      
+      loginUser(email);
+      
+      if (user.photoURL) {
+        localStorage.setItem(getAvatarKey(email), user.photoURL);
+      }
+    })
+    .catch((error) => {
+      console.error("Google Login Error:", error);
+      if (error.code === 'auth/popup-blocked') {
+        alert('⚠️ Pop-up ကို browser က ပိတ်ထားပါတယ်။ Pop-up blocker ကိုပိတ်ပြီး ထပ်စမ်းကြည့်ပါ။');
+      } else if (error.code === 'auth/popup-closed-by-user') {
+        // User closed popup, do nothing
+      } else {
+        alert('Google Login မအောင်မြင်ပါ: ' + error.message);
+      }
+    });
+};
+
+// ============ SECTION SWITCHING ============
+function showSection(id) {
+  ['loginSection', 'registerSection', 'dashboardSection'].forEach(s => document.getElementById(s).classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+  if (id === 'dashboardSection') {
+    updateDashboardUI();
+    updateAdminTabVisibility();
+  }
+  if (id === 'registerSection') {
+    document.getElementById('regPhoneError').classList.remove('show');
+    document.getElementById('regPassError').classList.remove('show');
+    document.getElementById('regTermsError').classList.remove('show');
+    document.getElementById('agreeTerms').checked = false;
+    document.getElementById('registerBtn').disabled = false;
+  }
+}
+
+function getFormattedDateTime() {
+  const now = new Date();
+  return now.toLocaleDateString('my-MM') + '၊ ' + now.toLocaleTimeString('my-MM', { hour: '2-digit', minute: '2-digit' });
+}
+
+// ============ AVATAR ============
+function uploadAvatar(event) {
+  const file = event.target.files[0];
+  if (file && activeUser) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const base64Image = e.target.result;
+      localStorage.setItem(getAvatarKey(activeUser), base64Image);
+      document.getElementById('userAvatarDisplay').style.backgroundImage = `url('${base64Image}')`;
+    };
+    reader.readAsDataURL(file);
+  }
+}
+
+function loadUserAvatar() {
+  if (activeUser) {
+    const savedAvatar = localStorage.getItem(getAvatarKey(activeUser));
+    if (savedAvatar) {
+      document.getElementById('userAvatarDisplay').style.backgroundImage = `url('${savedAvatar}')`;
+    } else {
+      document.getElementById('userAvatarDisplay').style.backgroundImage = `url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2240%22 height=%2240%22 viewBox=%220 0 24 24%22 fill=%22%2394a3b8%22><path d=%22M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z%22/></svg>')`;
+    }
+  }
+}
+
+// ============ TERMS & PRIVACY ALERTS ============
+function showTermsAlert() {
+  alert('📜 အသုံးပြုမှုဆိုင်ရာ စည်းကမ်းချက်များ\n\n' +
+    '၁။ အကောင့်တစ်ခုလျှင် ဖုန်းနံပါတ်တစ်ခုသာ အသုံးပြုရမည်။\n' +
+    '၂။ အကောင့်အတုအယောင်ဖွင့်၍ အလွဲသုံးစားလုပ်ပါက အကောင့်ပိတ်သိမ်းခံရမည်။\n' +
+    '၃။ ငွေသွင်း/ငွေထုတ်ကိစ္စများတွင် ဒိုင်ချုပ်၏ ဆုံးဖြတ်ချက်သည် အပြီးသတ်ဖြစ်သည်။\n' +
+    '၄။ ထိုးကြေးပမာဏသည် မိမိလက်ကျန်ငွေထက် မကျော်လွန်စေရ။\n' +
+    '၅။ တစ်ဦးချင်းစီ၏ အကောင့်လုံခြုံရေးကို မိမိတာဝန်ယူရမည်။');
+}
+
+function showPrivacyAlert() {
+  alert('🔒 ကိုယ်ရေးအချက်အလက် မူဝါဒ\n\n' +
+    '• သင့်ဖုန်းနံပါတ်ကို အကောင့်ဖွင့်ရန်အတွက်သာ အသုံးပြုပါသည်။\n' +
+    '• သင့်အချက်အလက်များကို ပြင်ပသို့ မျှဝေခြင်းမပြုပါ။\n' +
+    '• ငွေပေးချေမှုအချက်အလက်များကို လုံခြုံစွာ သိမ်းဆည်းထားပါသည်။\n' +
+    '• အကောင့်ဖျက်သိမ်းလိုပါက ဒိုင်ချုပ်ထံ ဆက်သွယ်နိုင်ပါသည်။');
+}
+
+// ============ PHONE VALIDATION ============
+function isValidMyanmarPhone(phone) {
+  const phoneRegex = /^09\d{9}$/;
+  return phoneRegex.test(phone);
+}
+
+// ============ AUTH ============
+function handleRegister() {
+  const phone = document.getElementById('regPhone').value.trim();
+  const pass = document.getElementById('regPass').value;
+  const agreed = document.getElementById('agreeTerms').checked;
+
+  document.getElementById('regPhoneError').classList.remove('show');
+  document.getElementById('regPassError').classList.remove('show');
+  document.getElementById('regTermsError').classList.remove('show');
+
+  let hasError = false;
+  if (!phone) {
+    document.getElementById('regPhoneError').innerText = '⚠️ ဖုန်းနံပါတ် ထည့်ပါ';
+    document.getElementById('regPhoneError').classList.add('show');
+    hasError = true;
+  } else if (!isValidMyanmarPhone(phone)) {
+    document.getElementById('regPhoneError').innerText = '⚠️ ဖုန်းနံပါတ် 09 ဖြင့်စပြီး ဂဏန်း ၁၁လုံး ဖြည့်ပါ (ဥပမာ - 09123456789)';
+    document.getElementById('regPhoneError').classList.add('show');
+    hasError = true;
+  }
+  if (!pass || pass.length < 4) {
+    document.getElementById('regPassError').innerText = '⚠️ စကားဝှက် အနည်းဆုံး ၄လုံး ထည့်ပါ';
+    document.getElementById('regPassError').classList.add('show');
+    hasError = true;
+  }
+  if (!agreed) {
+    document.getElementById('regTermsError').classList.add('show');
+    hasError = true;
+  }
+  if (hasError) return;
+
+  let users = JSON.parse(localStorage.getItem('users2DDatabase') || '{}');
+  if (phone === 'admin') {
+    alert('⚠️ ဤဖုန်းနံပါတ်ဖြင့် အကောင့်ဖွင့်၍မရပါ။ အခြားနံပါတ်ဖြင့် ထပ်စမ်းကြည့်ပါ။');
+    return;
+  }
+  if (users[phone]) {
+    alert('⚠️ ဤဖုန်းနံပါတ် ' + phone + ' ဖြင့် အကောင့်ဖွင့်ပြီးသားဖြစ်ပါသည်။\n\nအကောင့်တစ်ခုသာ ဖွင့်ခွင့်ရှိပါသည်။ လော့ဂ်အင်ပြန်ဝင်ပါ။');
+    return;
+  }
+
+  users[phone] = pass;
+  localStorage.setItem('users2DDatabase', JSON.stringify(users));
+  localStorage.setItem(getBalanceKey(phone), '0');
+  alert('✅ အကောင့်ဖွင့်ပြီးပါပြီ။\n\n📱 ဖုန်းနံပါတ် - ' + phone + '\n\n⚠️ ဤအကောင့်ကို အလွဲသုံးစားလုပ်ပါက ပိတ်သိမ်းခံရမည်။');
+  loginUser(phone);
+}
+
+function handleLogin() {
+  const id = document.getElementById('loginId').value.trim();
+  const pass = document.getElementById('loginPass').value;
+  if (!id || !pass) { alert("ဖုန်းနံပါတ်နှင့် စကားဝှက်ဖြည့်ပါ"); return; }
+
+  if (id === 'admin') {
+    const adminPass = localStorage.getItem('adminPassword') || '9999';
+    if (pass === adminPass) {
+      loginUser('admin');
+      return;
+    } else {
+      alert("စကားဝှက်မှား");
+      return;
+    }
+  }
+
+  let users = JSON.parse(localStorage.getItem('users2DDatabase') || '{}');
+  if (users[id] === pass) loginUser(id);
+  else alert("ဖုန်းနံပါတ် သို့မဟုတ် စကားဝှက် မှားယွင်းနေပါသည်");
+}
+
+function loginUser(phone) {
+  activeUser = phone;
+  localStorage.setItem('current2DUser', phone);
+  if (!localStorage.getItem(getBalanceKey(phone))) {
+    localStorage.setItem(getBalanceKey(phone), '0');
+  }
+  showSection('dashboardSection');
+  loadUserAvatar();
+  updateDashboardUI();
+  updateAdminTabVisibility();
+  if (activeUser === 'admin') {
+    switchTab('Admin');
+  } else {
+    switchTab('Tasks');
+  }
+}
+
+// ============ ADMIN TAB VISIBILITY ============
+function updateAdminTabVisibility() {
+  const bottomNav = document.getElementById('bottomNav');
+  const existingAdminTab = document.getElementById('navAdmin');
+  if (existingAdminTab) existingAdminTab.remove();
+
+  if (activeUser === 'admin') {
+    const adminTab = document.createElement('div');
+    adminTab.className = 'nav-item';
+    adminTab.id = 'navAdmin';
+    adminTab.innerHTML = '<span class="icon">🛡️</span><span>Admin</span>';
+    adminTab.onclick = () => switchTab('Admin');
+    bottomNav.insertBefore(adminTab, bottomNav.children[1]);
+  }
+}
+
+// ============ TAB SWITCHING ============
+function switchTab(tabName) {
+  ['Tasks', 'Admin', 'Contest', 'Wallet'].forEach(t => {
+    document.getElementById('tabContent' + t).classList.add('hidden');
+  });
+  document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+  const tabContent = document.getElementById('tabContent' + tabName);
+  if (tabContent) tabContent.classList.remove('hidden');
+  const navItem = document.getElementById('nav' + tabName);
+  if (navItem) navItem.classList.add('active');
+
+  if (tabName === 'Admin') {
+    loadAdminPanelData();
+  }
+}
+
+// ============ BETTING ============
+function isBettingAllowed() { return localStorage.getItem('betting_status') !== 'OFF'; }
+
+function place2DBet() {
+  if (!isBettingAllowed()) { alert("ထိုးခွင့်ပိတ်ထားပါသည်"); return; }
+  const num = document.getElementById('betNumber').value.trim();
+  const amt = parseInt(document.getElementById('betAmount').value);
+  if (!activeUser) return;
+  let bal = parseInt(localStorage.getItem(getBalanceKey(activeUser)) || '0');
+  if (num.length !== 2 || isNaN(amt) || amt <= 0 || amt > bal) { alert("အချက်အလက်မှား"); return; }
+  localStorage.setItem(getBalanceKey(activeUser), (bal - amt).toString());
+  let bets = JSON.parse(localStorage.getItem('twod_bets') || '[]');
+  bets.push({ user: activeUser, number: num, amount: amt, status: 'PENDING', date: getFormattedDateTime() });
+  localStorage.setItem('twod_bets', JSON.stringify(bets));
+  alert("2D ထိုးပြီး");
+  document.getElementById('betNumber').value = '';
+  document.getElementById('betAmount').value = '';
+  updateDashboardUI();
+}
+
+function place3DBet() {
+  if (!isBettingAllowed()) { alert("ထိုးခွင့်ပိတ်ထားပါသည်"); return; }
+  const num = document.getElementById('betNumber3D').value.trim();
+  const amt = parseInt(document.getElementById('betAmount3D').value);
+  if (!activeUser) return;
+  let bal = parseInt(localStorage.getItem(getBalanceKey(activeUser)) || '0');
+  if (num.length !== 3 || isNaN(amt) || amt <= 0 || amt > bal) { alert("အချက်အလက်မှား"); return; }
+  localStorage.setItem(getBalanceKey(activeUser), (bal - amt).toString());
+  let bets = JSON.parse(localStorage.getItem('bets3D') || '[]');
+  bets.push({ user: activeUser, number: num, amount: amt, status: 'PENDING', date: getFormattedDateTime() });
+  localStorage.setItem('bets3D', JSON.stringify(bets));
+  alert("3D ထိုးပြီး");
+  document.getElementById('betNumber3D').value = '';
+  document.getElementById('betAmount3D').value = '';
+  updateDashboardUI();
+}
+
+// ============ DASHBOARD UI UPDATE ============
+function updateDashboardUI() {
+  if (!activeUser) return;
+  document.getElementById('userPhone').innerText = activeUser;
+  let bal = parseInt(localStorage.getItem(getBalanceKey(activeUser)) || '0');
+  document.getElementById('userBalance').innerText = bal.toLocaleString();
+  document.getElementById('currentDate').innerText = getFormattedDateTime();
+
+  let all2D = JSON.parse(localStorage.getItem('twod_bets') || '[]').filter(b => b.user === activeUser).reverse();
+  let h2 = '';
+  all2D.forEach(b => {
+    let st = b.status === 'WIN' ? 'နိုင်' : (b.status === 'LOSE' ? 'ရှုံး' : 'စောင့်ဆိုင်း');
+    let sc = b.status === 'WIN' ? 'bg-win' : (b.status === 'LOSE' ? 'bg-lose' : 'bg-pending');
+    h2 += `<tr><td>${b.date}</td><td>${b.number}</td><td>${b.amount.toLocaleString()}</td><td><span class="badge ${sc}">${st}</span></td></tr>`;
+  });
+  document.getElementById('betLogsBody').innerHTML = h2 || '<tr><td colspan="4">မရှိပါ</td></tr>';
+
+  let all3D = JSON.parse(localStorage.getItem('bets3D') || '[]').filter(b => b.user === activeUser).reverse();
+  let h3 = '';
+  all3D.forEach(b => {
+    let st = b.status === 'WIN' ? 'နိုင်' : (b.status === 'LOSE' ? 'ရှုံး' : 'စောင့်ဆိုင်း');
+    let sc = b.status === 'WIN' ? 'bg-win' : (b.status === 'LOSE' ? 'bg-lose' : 'bg-pending');
+    h3 += `<tr><td>${b.date}</td><td>${b.number}</td><td>${b.amount.toLocaleString()}</td><td><span class="badge ${sc}">${st}</span></td></tr>`;
+  });
+  document.getElementById('betLogs3DBody').innerHTML = h3 || '<tr><td colspan="4">မရှိပါ</td></tr>';
+
+  let depReqs = JSON.parse(localStorage.getItem('deposit_requests') || '[]')
+      .filter(r => r.user === activeUser)
+      .map(r => ({ ...r, type: 'DEPOSIT' }));
+  let wReqs = JSON.parse(localStorage.getItem('withdraw_requests') || '[]')
+      .filter(r => r.user === activeUser)
+      .map(r => ({ ...r, type: 'WITHDRAW' }));
+  let allTransactions = [...depReqs, ...wReqs].sort((a, b) => new Date(b.date) - new Date(a.date));
+  let transHtml = '';
+  allTransactions.forEach(r => {
+    let st = r.status === 'APPROVED' ? 'အတည်ပြုပြီး' : (r.status === 'REJECTED' ? 'ငြင်းပယ်' : 'စောင့်ဆိုင်း');
+    let sc = r.status === 'APPROVED' ? 'bg-approved' : (r.status === 'REJECTED' ? 'bg-rejected' : 'bg-pending');
+    let typeLabel = r.type === 'DEPOSIT' ? '💰 ငွေသွင်း' : '💸 Ngwe Thout';
+    transHtml += `<tr><td>${r.date}</td><td>${typeLabel}</td><td>${(r.amount || 0).toLocaleString()}</td><td><span class="badge ${sc}">${st}</span></td></tr>`;
+  });
+  document.getElementById('modalTransactionLogsBody').innerHTML = transHtml || '<tr><td colspan="4">မှတ်တမ်းမရှိသေးပါ</td></tr>';
+}
+
+function openTransactionModal() {
+  updateDashboardUI();
+  document.getElementById('transactionModal').style.display = 'flex';
+}
+
+function logout() {
+  if (auth.currentUser) {
+    auth.signOut().catch(e => console.log(e));
+  }
+  localStorage.removeItem('current2DUser');
+  activeUser = null;
+  location.reload();
+}
+
+// ============ PAYMENT / DEPOSIT ============
+let currentDepositPayment = 'kpay';
+let currentWithdrawPayment = 'kpay';
+
+function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+function selectPayment(type, method) {
+  if (type === 'deposit') {
+    currentDepositPayment = method;
+    document.getElementById('btnKpay').classList.toggle('active', method === 'kpay');
+    document.getElementById('btnWave').classList.toggle('active', method === 'wave');
+  } else {
+    currentWithdrawPayment = method;
+    document.getElementById('btnWithdrawKpay').classList.toggle('active', method === 'kpay');
+    document.getElementById('btnWithdrawWave').classList.toggle('active', method === 'wave');
+  }
+}
+
+function setDepositAmount(amt) { document.getElementById('depAmt').value = amt; }
+
+function proceedToTransfer() {
+  const amt = document.getElementById('depAmt').value;
+  if (!amt || amt < 2000) { alert('2000 ကျပ်အထက် ဖြည့်ပါ'); return; }
+  closeModal('depositModal');
+
+  const adminKpayName = localStorage.getItem('payment_kpay_name') || 'နံပါတ်ပြောင်းနေသည်း';
+  const adminKpayPhone = localStorage.getItem('payment_kpay_phone') || 'နံပါတ်ပြောင်းနေသည်း';
+  const adminWaveName = localStorage.getItem('payment_wave_name') || 'နံပါတ်ပြောင်းနေသည်း';
+  const adminWavePhone = localStorage.getItem('payment_wave_phone') || 'နံပါတ်ပြောင်းနေသည်း';
+
+  document.getElementById('kpayNameDisplay').innerText = adminKpayName;
+  document.getElementById('kpayPhoneDisplay').innerText = adminKpayPhone;
+  document.getElementById('waveNameDisplay').innerText = adminWaveName;
+  document.getElementById('wavePhoneDisplay').innerText = adminWavePhone;
+
+  document.getElementById(currentDepositPayment + 'FinalAmount').innerText = parseInt(amt).toLocaleString() + ' MMK';
+  openModal(currentDepositPayment + 'TransferModal');
+}
+
+function submitDeposit(type) {
+  const tx = document.getElementById(type + 'TxCode').value;
+  const name = document.getElementById(type + 'SenderName').value;
+  const amt = parseInt(document.getElementById('depAmt').value) || 0;
+  if (tx.length < 5 || !name) { alert('အချက်အလက်ဖြည့်ပါ'); return; }
+  let reqs = JSON.parse(localStorage.getItem('deposit_requests') || '[]');
+  reqs.push({
+    id: Date.now().toString(36) + Math.random().toString(36).substr(2, 5),
+    user: activeUser,
+    amount: amt,
+    method: type,
+    txCode: tx,
+    senderName: name,
+    status: 'PENDING',
+    date: getFormattedDateTime()
+  });
+  localStorage.setItem('deposit_requests', JSON.stringify(reqs));
+  alert('ငွေဖြည့်တောင်းဆိုချက် ပေးပို့ပြီးပါပြီ');
+  closeModal(type + 'TransferModal');
+  document.getElementById('depAmt').value = 5000;
+  updateDashboardUI();
+}
+
+function submitWithdraw() {
+  const method = currentWithdrawPayment;
+  const amt = parseInt(document.getElementById('withdrawAmount').value);
+  const name = document.getElementById('withdrawReceiverName').value.trim();
+  const phone = document.getElementById('withdrawAccount').value.trim();
+  const user = activeUser;
+  if (!user) { alert('ကျေးဇူးပြု၍ လော့ဂ်အင် အရင်ဝင်ပါ'); return; }
+  let bal = parseInt(localStorage.getItem(getBalanceKey(user)) || '0');
+  if (!amt || amt < 10000) { alert('10000 ကျပ်အထက် ထုတ်ပေးပါ'); return; }
+  if (!name || !phone) { alert('အချက်အလက်များ ပြည့်စုံအောင် ဖြည့်ပါ'); return; }
+  if (bal < amt) { alert('လက်ကျန်ငွေ မလုံလောက်ပါ'); return; }
+
+  localStorage.setItem(getBalanceKey(user), (bal - amt).toString());
+
+  let reqs = JSON.parse(localStorage.getItem('withdraw_requests') || '[]');
+  reqs.push({
+    id: 'W' + Date.now(),
+    user: user,
+    amount: amt,
+    method: method,
+    name: name,
+    account: phone,
+    status: 'PENDING',
+    date: getFormattedDateTime()
+  });
+  localStorage.setItem('withdraw_requests', JSON.stringify(reqs));
+  closeModal('withdrawModal');
+  document.getElementById('withdrawAmount').value = '';
+  document.getElementById('withdrawReceiverName').value = '';
+  document.getElementById('withdrawAccount').value = '';
+  updateDashboardUI();
+  alert('ငွေထုတ်တောင်းဆိုချက် တင်ပြီးပါပြီ။ ဒိုင်ချုပ်မှ အတည်ပြုပေးပါလိမ့်မည်။');
+}
+
+function copyText(txt) { navigator.clipboard.writeText(txt).then(() => alert('ကူးယူပြီး')); }
+
+// ============ ADMIN FUNCTIONS ============
+function loadAdminPanelData() {
+  loadCurrentPaymentSettings();
+  renderAdminUI();
+  let st = localStorage.getItem('betting_status') || 'ON';
+  let btn = document.getElementById('toggleBtn');
+  if (btn) {
+    if (st === 'OFF') {
+      btn.innerText = "ထိုးခွင့် - ပိတ်";
+      btn.style.backgroundColor = "#ef4444";
+    } else {
+      btn.innerText = "ထိုးခွင့် - ဖွင့်";
+      btn.style.backgroundColor = "#10b981";
+    }
+  }
+}
+
+function savePaymentSettings() {
+  const kName = document.getElementById('admKpayName').value.trim();
+  const kPhone = document.getElementById('admKpayPhone').value.trim();
+  const wName = document.getElementById('admWaveName').value.trim();
+  const wPhone = document.getElementById('admWavePhone').value.trim();
+  if(!kName || !kPhone || !wName || !wPhone) {
+    alert("အချက်အလက်အားလုံး ပြည့်စုံအောင် ဖြည့်ပေးပါခင်ဗျာ။");
+    return;
+  }
+  localStorage.setItem('payment_kpay_name', kName);
+  localStorage.setItem('payment_kpay_phone', kPhone);
+  localStorage.setItem('payment_wave_name', wName);
+  localStorage.setItem('payment_wave_phone', wPhone);
+  alert("ငွေသွင်းအကောင့်နံပါတ်ပြောင်းလဲပြီးပါပြီ!");
+}
+
+function loadCurrentPaymentSettings() {
+  document.getElementById('admKpayName').value = localStorage.getItem('payment_kpay_name') || 'Ma Nwe Nwe Aye';
+  document.getElementById('admKpayPhone').value = localStorage.getItem('payment_kpay_phone') || '0978123456';
+  document.getElementById('admWaveName').value = localStorage.getItem('payment_wave_name') || 'Khaing Oo';
+  document.getElementById('admWavePhone').value = localStorage.getItem('payment_wave_phone') || '0925987654';
+}
+
+function toggleBetting() {
+  let st = localStorage.getItem('betting_status') || 'ON';
+  let btn = document.getElementById('toggleBtn');
+  if (st === 'ON') {
+    localStorage.setItem('betting_status', 'OFF');
+    btn.innerText = "ထိုးခွင့် - ပိတ်";
+    btn.style.backgroundColor = "#ef4444";
+  } else {
+    localStorage.setItem('betting_status', 'ON');
+    btn.innerText = "ထိုးခွင့် - ဖွင့်";
+    btn.style.backgroundColor = "#10b981";
+  }
+}
+
+function declareResult2D() {
+  const win = document.getElementById('winNumber2D').value.trim();
+  if (win.length !== 2 || isNaN(win)) { alert("ဂဏန်း၂လုံးထည့်ပါ"); return; }
+  let bets = JSON.parse(localStorage.getItem('twod_bets') || '[]');
+  if (bets.length === 0) { alert("စာရင်းမရှိ"); return; }
+  let wc = 0;
+  bets = bets.map(b => {
+    if (b.status === 'PENDING') {
+      if (b.number === win) {
+        b.status = 'WIN';
+        let bal = parseInt(localStorage.getItem('balance_' + b.user) || '0');
+        localStorage.setItem('balance_' + b.user, (bal + (b.amount * 85)).toString());
+        wc++;
+      } else b.status = 'LOSE';
+    }
+    return b;
+  });
+  localStorage.setItem('twod_bets', JSON.stringify(bets));
+  document.getElementById('winNumber2D').value = '';
+  renderAdminUI();
+  updateDashboardUI();
+  alert(`2D [${win}] ကြေညာပြီး။ ပေါက်သူ ${wc} ယောက်`);
+}
+
+function declareResult3D() {
+  const win = document.getElementById('winNumber3D').value.trim();
+  if (win.length !== 3 || isNaN(win)) { alert("ဂဏန်း၃လုံးထည့်ပါ"); return; }
+  let bets = JSON.parse(localStorage.getItem('bets3D') || '[]');
+  if (bets.length === 0) { alert("စာရင်းမရှိ"); return; }
+  let wc = 0;
+  bets = bets.map(b => {
+    if (b.status === 'PENDING') {
+      if (b.number === win) {
+        b.status = 'WIN';
+        let bal = parseInt(localStorage.getItem('balance_' + b.user) || '0');
+        localStorage.setItem('balance_' + b.user, (bal + (b.amount * 500)).toString());
+        wc++;
+      } else b.status = 'LOSE';
+    }
+    return b;
+  });
+  localStorage.setItem('bets3D', JSON.stringify(bets));
+  document.getElementById('winNumber3D').value = '';
+  renderAdminUI();
+  updateDashboardUI();
+  alert(`3D [${win}] ကြေညာပြီး။ ပေါက်သူ ${wc} ယောက်`);
+}
+
+function approveDeposit(id) {
+  if (!confirm("ဤငွေဖြည့်တောင်းဆိုချက်ကို အတည်ပြုမှာ သေချာပါသလား။")) return;
+  let reqs = JSON.parse(localStorage.getItem('deposit_requests') || '[]');
+  let req = reqs.find(r => r.id === id);
+  if (!req || req.status !== 'PENDING') return;
+  req.status = 'APPROVED';
+  let bal = parseInt(localStorage.getItem('balance_' + req.user) || '0');
+  localStorage.setItem('balance_' + req.user, (bal + req.amount).toString());
+  localStorage.setItem('deposit_requests', JSON.stringify(reqs));
+  renderAdminUI();
+  updateDashboardUI();
+}
+
+function rejectDeposit(id) {
+  if (!confirm("ဤငွေဖြည့်တောင်းဆိုချက်ကို ငြင်းပယ်မှာ သေချာပါသလား။")) return;
+  let reqs = JSON.parse(localStorage.getItem('deposit_requests') || '[]');
+  let req = reqs.find(r => r.id === id);
+  if (!req || req.status !== 'PENDING') return;
+  req.status = 'REJECTED';
+  localStorage.setItem('deposit_requests', JSON.stringify(reqs));
+  renderAdminUI();
+}
+
+function approveWithdraw(id) {
+  if (!confirm("ဤငွေထုတ်တောင်းဆိုချက်ကို အတည်ပြုမှာ သေချာပါသလား။")) return;
+  let reqs = JSON.parse(localStorage.getItem('withdraw_requests') || '[]');
+  let req = reqs.find(r => r.id === id);
+  if (!req || req.status !== 'PENDING') return;
+  req.status = 'APPROVED';
+  localStorage.setItem('withdraw_requests', JSON.stringify(reqs));
+  renderAdminUI();
+}
+
+function rejectWithdraw(id) {
+  if (!confirm("ဤငွေထုတ်တောင်းဆိုချက်ကို ငြင်းပယ်မှာ သေချာပါသလား။")) return;
+  let reqs = JSON.parse(localStorage.getItem('withdraw_requests') || '[]');
+  let req = reqs.find(r => r.id === id);
+  if (!req || req.status !== 'PENDING') return;
+  req.status = 'REJECTED';
+  let bal = parseInt(localStorage.getItem('balance_' + req.user) || '0');
+  localStorage.setItem('balance_' + req.user, (bal + req.amount).toString());
+  localStorage.setItem('withdraw_requests', JSON.stringify(reqs));
+  renderAdminUI();
+  updateDashboardUI();
+}
+
+function renderAdminUI() {
+  try {
+    let all2D = JSON.parse(localStorage.getItem('twod_bets') || '[]');
+    let all3D = JSON.parse(localStorage.getItem('bets3D') || '[]');
+    let t2 = document.getElementById('adminBets2DBody');
+    let t3 = document.getElementById('adminBets3DBody');
+
+    if(t2) {
+      t2.innerHTML = '';
+      if (all2D.length === 0) {
+        t2.innerHTML = '<tr><td colspan="4" class="no-data">2D စာရင်းမရှိပါ</td></tr>';
+      } else {
+        all2D.slice().reverse().forEach(b => {
+          let st = b.status === 'WIN' ? '🎉နိုင်' : (b.status === 'LOSE' ? 'ရှုံး' : 'စောင့်ဆိုင်း');
+          let cl = b.status === 'WIN' ? 'text-win' : (b.status === 'LOSE' ? 'text-lose' : '');
+          t2.innerHTML += `<tr><td>${b.user}</td><td><strong style="color:#38bdf8;">${b.number}</strong></td><td>${(b.amount || 0).toLocaleString()}</td><td class="${cl}">${st}</td></tr>`;
+        });
+      }
+    }
+
+    if(t3) {
+      t3.innerHTML = '';
+      if (all3D.length === 0) {
+        t3.innerHTML = '<tr><td colspan="4" class="no-data">3D စာရင်းမရှိပါ</td></tr>';
+      } else {
+        all3D.slice().reverse().forEach(b => {
+          let st = b.status === 'WIN' ? '🎉နိုင်' : (b.status === 'LOSE' ? 'ရှုံး' : 'စောင့်ဆိုင်း');
+          let cl = b.status === 'WIN' ? 'text-win' : (b.status === 'LOSE' ? 'text-lose' : '');
+          t3.innerHTML += `<tr><td>${b.user}</td><td><strong style="color:#f59e0b;">${b.number}</strong></td><td>${(b.amount || 0).toLocaleString()}</td><td class="${cl}">${st}</td></tr>`;
+        });
+      }
+    }
+
+    let depReqs = JSON.parse(localStorage.getItem('deposit_requests') || '[]');
+    let depBody = document.getElementById('adminDepositsBody');
+    if(depBody) {
+      let depPend = depReqs.filter(r => r.status === 'PENDING').length;
+      let depBadge = document.getElementById('depositPendingCount');
+      if(depBadge) { depBadge.style.display = depPend > 0 ? 'inline-block' : 'none'; depBadge.innerText = depPend; }
+      depBody.innerHTML = '';
+      if (depReqs.length === 0) {
+        depBody.innerHTML = '<tr><td colspan="7" class="no-data">ငွေဖြည့်တောင်းဆိုချက် မရှိပါ</td></tr>';
+      } else {
+        let sortedDep = [...depReqs].reverse();
+        sortedDep.sort((a,b) => (a.status==='PENDING' ? -1 : 1) - (b.status==='PENDING' ? -1 : 1));
+        sortedDep.forEach(r => {
+          let badge = r.status==='PENDING' ? '<span class="badge-pending">စောင့်ဆိုင်း</span>' : (r.status==='APPROVED'?'<span class="badge-approved">အတည်ပြုပြီး</span>':'<span class="badge-rejected">ငြင်းပယ်</span>');
+          let btns = r.status==='PENDING' ? `<button class="btn-approve" onclick="approveDeposit('${r.id}')">✅</button><button class="btn-reject" onclick="rejectDeposit('${r.id}')">❌</button>` : (r.status==='APPROVED'?'<span style="color:#10b981;">✔️</span>':'<span style="color:#ef4444;">✖️</span>');
+          depBody.innerHTML += `<tr><td>${r.user}</td><td><strong>${(r.amount || 0).toLocaleString()}</strong></td><td>${r.method==='kpay'?'🏦 KBZ':'📱 Wave'}</td><td>${r.txCode||'-'}</td><td>${r.senderName||'-'}</td><td>${badge}</td><td>${btns}</td></tr>`;
+        });
+      }
+    }
+
+    let wReqs = JSON.parse(localStorage.getItem('withdraw_requests') || '[]');
+    let wBody = document.getElementById('adminWithdrawalsBody');
+    if(wBody) {
+      let wPend = wReqs.filter(r => r.status === 'PENDING').length;
+      let wBadge = document.getElementById('withdrawPendingCount');
+      if(wBadge) { wBadge.style.display = wPend > 0 ? 'inline-block' : 'none'; wBadge.innerText = wPend; }
+      wBody.innerHTML = '';
+      if (wReqs.length === 0) {
+        wBody.innerHTML = '<tr><td colspan="6" class="no-data">ငွေထုတ်တောင်းဆိုချက် မရှိပါ</td></tr>';
+      } else {
+        let sortedWith = [...wReqs].reverse();
+        sortedWith.sort((a,b) => (a.status==='PENDING' ? -1 : 1) - (b.status==='PENDING' ? -1 : 1));
+        sortedWith.forEach(r => {
+          let badge = r.status==='PENDING' ? '<span class="badge-pending">စောင့်ဆိုင်း</span>' : (r.status==='APPROVED'?'<span class="badge-approved">အတည်ပြုပြီး</span>':'<span class="badge-rejected">ငြင်းပယ်</span>');
+          let btns = r.status==='PENDING' ? `<button class="btn-approve" onclick="approveWithdraw('${r.id}')">✅</button><button class="btn-reject" onclick="rejectWithdraw('${r.id}')">❌</button>` : (r.status==='APPROVED'?'<span style="color:#10b981;">✔️</span>':'<span style="color:#ef4444;">✖️</span>');
+          wBody.innerHTML += `<tr><td>${r.user}</td><td><strong>${(r.amount || 0).toLocaleString()}</strong></td><td>${r.method==='kpay'?'🏦 KBZ':'📱 Wave'}</td><td><span style="color:#38bdf8;">${r.name||'-'}</span><br><small style="color:#10b981;">${r.account||'-'}</small></td><td>${badge}</td><td>${btns}</td></tr>`;
+        });
+      }
+    }
+  } catch (e) { console.error(e); }
+}
+
+// Auto refresh admin panel every 5 seconds if visible
+setInterval(() => {
+  if (activeUser === 'admin' && !document.getElementById('tabContentAdmin').classList.contains('hidden')) {
+    renderAdminUI();
+  }
+}, 5000);
+
+// ============ AUTO LOGIN ============
+if (activeUser) {
+  let users = JSON.parse(localStorage.getItem('users2DDatabase') || '{}');
+  if (users[activeUser] || activeUser === 'admin') {
+    loginUser(activeUser);
+  } else {
+    localStorage.removeItem('current2DUser');
+  }
+}
